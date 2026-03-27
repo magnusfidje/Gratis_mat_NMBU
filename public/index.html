@@ -36,6 +36,7 @@
       <button class="nav-btn" data-view="feed" data-i18n="nav.events"></button>
       <button class="nav-btn" data-view="submit" data-i18n="nav.submit"></button>
       <button class="nav-btn" data-view="subscribe" data-i18n="nav.subscribe"></button>
+      <button class="nav-btn" data-view="about" data-i18n="nav.about"></button>
     </div>
   </nav>
 
@@ -248,6 +249,32 @@
       <div class="device-guide">
         <h3 data-i18n="sub.android.title"></h3>
         <p data-i18n="sub.android.text"></p>
+      </div>
+    </section>
+
+    <!-- OM -->
+    <section id="view-about" class="view">
+      <div class="about-wrap">
+        <div class="about-hero">
+          <span class="about-emoji">🌿</span>
+          <h2 data-i18n="about.title"></h2>
+          <p data-i18n="about.lead"></p>
+        </div>
+        <div class="about-card">
+          <h3 data-i18n="about.howTitle"></h3>
+          <ul class="about-steps">
+            <li><span class="step-icon">📅</span> <span data-i18n="about.step1"></span></li>
+            <li><span class="step-icon">⚡</span> <span data-i18n="about.step2"></span></li>
+            <li><span class="step-icon">➕</span> <span data-i18n="about.step3"></span></li>
+            <li><span class="step-icon">🔔</span> <span data-i18n="about.step4"></span></li>
+          </ul>
+        </div>
+        <div class="about-cta">
+          <p data-i18n="about.cta"></p>
+          <button class="btn-primary" onclick="switchView('submit')">
+            <span data-i18n="about.ctaBtn"></span>
+          </button>
+        </div>
       </div>
     </section>
 

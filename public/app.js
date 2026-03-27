@@ -9,6 +9,7 @@ const TRANSLATIONS = {
     'nav.events':   'Arrangementer',
     'nav.submit':   'Legg til',
     'nav.subscribe':'Varsler',
+    'nav.about':    'Om',
 
     'cal.months':  ['januar','februar','mars','april','mai','juni','juli','august','september','oktober','november','desember'],
     'cal.weekdays':['Man','Tir','Ons','Tor','Fre','Lør','Søn'],
@@ -94,6 +95,16 @@ const TRANSLATIONS = {
     'event.signup': '🔗 Link til arrangement',
     'event.addtocal': '📅 Legg til i kalender',
     'event.date_locale': 'nb-NO',
+
+    'about.title':   'Gratis Mat NMBU',
+    'about.lead':    'Mat er dyrt. Heldigvis skjer det jevnlig arrangementer på NMBU-campus med gratis mat — pizza etter forelesninger, rester fra møter, faglige kvelder med buffé. Problemet er at ikke alle får det med seg.',
+    'about.howTitle':'Slik fungerer det',
+    'about.step1':   'Kalender viser kommende arrangementer med gratis mat.',
+    'about.step2':   '"Mat nå" viser restemat og spontane tilbud som forsvinner etter 6 timer.',
+    'about.step3':   'Alle kan melde inn arrangementer — de publiseres etter en rask gjennomgang.',
+    'about.step4':   'Aktiver varsler så du aldri går glipp av gratis mat.',
+    'about.cta':     'Vet du om et arrangement med gratis mat? Del det med alle på campus!',
+    'about.ctaBtn':  'Legg til arrangement',
   },
   en: {
     'site.title':   'Free Food NMBU',
@@ -104,6 +115,7 @@ const TRANSLATIONS = {
     'nav.events':   'Events',
     'nav.submit':   'Add event',
     'nav.subscribe':'Alerts',
+    'nav.about':    'About',
 
     'cal.months':  ['January','February','March','April','May','June','July','August','September','October','November','December'],
     'cal.weekdays':['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
@@ -189,6 +201,16 @@ const TRANSLATIONS = {
     'event.signup': '🔗 Link to event',
     'event.addtocal': '📅 Add to calendar',
     'event.date_locale': 'en-GB',
+
+    'about.title':   'Free Food NMBU',
+    'about.lead':    'Food is expensive. Luckily, events with free food happen regularly on NMBU campus — pizza after lectures, leftovers from meetings, academic evenings with buffets. The problem is that not everyone hears about them.',
+    'about.howTitle':'How it works',
+    'about.step1':   'Calendar shows upcoming events with free food.',
+    'about.step2':   '"Food now" shows leftover food and spontaneous offers that disappear after 6 hours.',
+    'about.step3':   'Anyone can submit events — they are published after a quick review.',
+    'about.step4':   'Enable notifications so you never miss free food.',
+    'about.cta':     'Know about an event with free food? Share it with everyone on campus!',
+    'about.ctaBtn':  'Add event',
   }
 };
 
@@ -285,6 +307,7 @@ const views = {
   feed:      document.getElementById('view-feed'),
   submit:    document.getElementById('view-submit'),
   subscribe: document.getElementById('view-subscribe'),
+  about:     document.getElementById('view-about'),
 };
 
 document.querySelectorAll('.nav-btn').forEach(btn => {

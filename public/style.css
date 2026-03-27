@@ -843,3 +843,37 @@ footer a:hover { color: #fff; text-decoration: underline; }
   /* Hide logo subtitle on very small screens */
   .logo-sub { display: none; }
 }
+
+/* ── Om-siden ─────────────────────────────────── */
+.about-wrap { max-width: 600px; margin: 0 auto; padding: 1rem 0 2rem; }
+
+.about-hero {
+  text-align: center;
+  padding: 2rem 1rem 1.5rem;
+}
+.about-emoji { font-size: 3rem; display: block; margin-bottom: .75rem; }
+.about-hero h2 { font-size: 1.5rem; color: var(--green-dark); margin-bottom: .75rem; }
+.about-hero p  { color: var(--text-muted); line-height: 1.6; font-size: .95rem; }
+
+.about-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin: 1rem 0;
+  box-shadow: var(--shadow);
+}
+.about-card h3 { font-size: 1rem; color: var(--green-dark); margin-bottom: 1rem; }
+
+.about-steps { list-style: none; display: flex; flex-direction: column; gap: .85rem; }
+.about-steps li { display: flex; align-items: flex-start; gap: .75rem; font-size: .92rem; line-height: 1.5; }
+.step-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: -.05rem; }
+
+.about-cta {
+  background: var(--green-pale);
+  border: 1px solid var(--green-muted);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  text-align: center;
+}
+.about-cta p { margin-bottom: 1rem; color: var(--green-dark); font-weight: 500; line-height: 1.5; }
+.about-cta .btn-primary { width: auto; display: inline-block; }
