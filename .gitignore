@@ -1,0 +1,8 @@
+# Hemmeligheter
+.env
+
+# Avhengigheter
+node_modules/
+
+# Data (lagres på serveren, ikke i git)
+data/

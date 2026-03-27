@@ -1,0 +1,13 @@
+{
+  "name": "Gratis Mat NMBU",
+  "short_name": "Gratis Mat",
+  "description": "Arrangementer med gratis mat på NMBU",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2e7d32",
+  "theme_color": "#2e7d32",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gratis Mat NMBU</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#2e7d32" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Gratis Mat NMBU" />
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">🌿</span>
+        <div>
+          <span class="logo-title" data-i18n="site.title"></span>
+          <span class="logo-sub" data-i18n="site.subtitle"></span>
+        </div>
+      </div>
+      <div class="lang-toggle">
+        <button class="lang-btn" data-lang="no">NO</button>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="nav-inner">
+      <button class="nav-btn active" data-view="calendar" data-i18n="nav.calendar"></button>
+      <button class="nav-btn" data-view="now" data-i18n="nav.now"></button>
+      <button class="nav-btn" data-view="feed" data-i18n="nav.events"></button>
+      <button class="nav-btn" data-view="submit" data-i18n="nav.submit"></button>
+      <button class="nav-btn" data-view="subscribe" data-i18n="nav.subscribe"></button>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- KALENDER -->
+    <section id="view-calendar" class="view active">
+      <div class="calendar-wrap">
+        <div class="calendar-header">
+          <button id="prev-month" class="month-btn">&#8249;</button>
+          <h2 id="calendar-title"></h2>
+          <button id="next-month" class="month-btn">&#8250;</button>
+        </div>
+        <div class="calendar-grid-header" id="cal-weekday-header"></div>
+        <div id="calendar-grid" class="calendar-grid"></div>
+      </div>
+
+      <div id="day-events" class="day-events hidden">
+        <div class="day-events-header">
+          <h3 id="day-events-title"></h3>
+          <button id="close-day-events" class="close-btn">&#10005;</button>
+        </div>
+        <div id="day-events-list"></div>
+      </div>
+    </section>
+
+    <!-- MAT NÅ / RESTEMAT -->
+    <section id="view-now" class="view">
+      <div class="section-header">
+        <h2 data-i18n="now.title"></h2>
+        <p class="section-sub" data-i18n="now.subtitle"></p>
+      </div>
+
+      <div class="form-wrap">
+        <form id="restemat-form" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="r-food"><span data-i18n="now.label.food"></span> <span class="req">*</span></label>
+              <input type="text" id="r-food" name="food" data-i18n-ph="now.ph.food" maxlength="100" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="r-location"><span data-i18n="now.label.location"></span> <span class="req">*</span></label>
+              <input type="text" id="r-location" name="location" data-i18n-ph="now.ph.location" maxlength="100" required />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="r-description"><span data-i18n="now.label.description"></span></label>
+              <textarea id="r-description" name="description" rows="3" data-i18n-ph="now.ph.description" maxlength="200"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="r-contact"><span data-i18n="now.label.contact"></span></label>
+              <input type="text" id="r-contact" name="contact" data-i18n-ph="now.ph.contact" maxlength="100" />
+            </div>
+          </div>
+
+          <div id="restemat-error" class="form-msg error hidden"></div>
+          <div id="restemat-success" class="form-msg success hidden"></div>
+
+          <button type="submit" class="btn-primary" id="restemat-btn">
+            <span data-i18n="now.btn"></span>
+          </button>
+        </form>
+      </div>
+
+      <p class="restemat-info" data-i18n="now.info"></p>
+
+      <div id="restemat-feed" class="restemat-feed"></div>
+    </section>
+
+    <!-- FEED -->
+    <section id="view-feed" class="view">
+      <div class="section-header">
+        <h2 data-i18n="feed.title"></h2>
+        <p class="section-sub" data-i18n="feed.subtitle"></p>
+      </div>
+      <div id="filter-bar" class="filter-bar">
+        <button class="filter-btn active" data-filter="">
+          <span data-i18n="filter.all"></span>
+        </button>
+        <button class="filter-btn" data-filter="pizza">🍕 Pizza</button>
+        <button class="filter-btn" data-filter="burger">🍔 Burger</button>
+        <button class="filter-btn" data-filter="snacks">🍿 Snacks</button>
+        <button class="filter-btn" data-filter="annet">🍽️ <span data-i18n="cat.annet"></span></button>
+      </div>
+      <div id="feed-list" class="feed-list"></div>
+    </section>
+
+    <!-- LEGG TIL -->
+    <section id="view-submit" class="view">
+      <div class="form-wrap">
+        <div class="section-header">
+          <h2 data-i18n="submit.title"></h2>
+          <p class="section-sub" data-i18n="submit.subtitle"></p>
+        </div>
+
+        <form id="event-form" novalidate>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="f-title"><span data-i18n="submit.label.title"></span> <span class="req">*</span></label>
+              <input type="text" id="f-title" name="title" data-i18n-ph="submit.ph.title" maxlength="100" required />
+            </div>
+          </div>
+
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label for="f-date"><span data-i18n="submit.label.date"></span> <span class="req">*</span></label>
+              <input type="date" id="f-date" name="date" required />
+            </div>
+            <div class="form-group">
+              <label for="f-time"><span data-i18n="submit.label.time"></span></label>
+              <input type="time" id="f-time" name="time" />
+            </div>
+          </div>
+
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label for="f-location"><span data-i18n="submit.label.location"></span> <span class="req">*</span></label>
+              <input type="text" id="f-location" name="location" data-i18n-ph="submit.ph.location" maxlength="100" required />
+            </div>
+            <div class="form-group">
+              <label for="f-category"><span data-i18n="submit.label.category"></span> <span class="req">*</span></label>
+              <select id="f-category" name="category" required>
+                <option value="" data-i18n="submit.ph.category"></option>
+                <option value="pizza">🍕 <span data-i18n="cat.pizza"></span></option>
+                <option value="burger">🍔 <span data-i18n="cat.burger"></span></option>
+                <option value="snacks">🍿 <span data-i18n="cat.snacks"></span></option>
+                <option value="annet">🍽️ <span data-i18n="cat.annet"></span></option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row hidden" id="custom-food-row">
+            <div class="form-group">
+              <label for="f-custom-food"><span data-i18n="submit.label.customFood"></span> <span class="req">*</span></label>
+              <input type="text" id="f-custom-food" name="customFood" data-i18n-ph="submit.ph.customFood" maxlength="60" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="f-organizer"><span data-i18n="submit.label.organizer"></span></label>
+              <input type="text" id="f-organizer" name="organizer" data-i18n-ph="submit.ph.organizer" maxlength="100" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="f-description"><span data-i18n="submit.label.description"></span></label>
+              <textarea id="f-description" name="description" rows="4" data-i18n-ph="submit.ph.description" maxlength="500"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row two-col">
+            <div class="form-group">
+              <label for="f-signup-link"><span data-i18n="submit.label.signupLink"></span></label>
+              <input type="url" id="f-signup-link" name="signupLink" placeholder="https://…" maxlength="300" />
+            </div>
+            <div class="form-group">
+              <label for="f-contact"><span data-i18n="submit.label.contact"></span></label>
+              <input type="text" id="f-contact" name="contact" data-i18n-ph="submit.ph.contact" maxlength="100" />
+            </div>
+          </div>
+
+          <div id="form-error" class="form-msg error hidden"></div>
+          <div id="form-success" class="form-msg success hidden"></div>
+
+          <button type="submit" class="btn-primary" id="submit-btn">
+            <span data-i18n="submit.btn"></span>
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- VARSLER -->
+    <section id="view-subscribe" class="view">
+      <div class="section-header">
+        <h2 data-i18n="sub.title"></h2>
+        <p class="section-sub" data-i18n="sub.subtitle"></p>
+      </div>
+
+      <!-- Push-knapp (rendres av JS) -->
+      <div id="push-status" class="push-status-wrap"></div>
+
+      <!-- iPhone-guide -->
+      <div class="device-guide">
+        <h3 data-i18n="sub.ios.title"></h3>
+        <p class="device-guide-note" data-i18n="sub.ios.note"></p>
+        <ol class="guide-steps">
+          <li data-i18n="sub.ios.step1"></li>
+          <li data-i18n="sub.ios.step2"></li>
+          <li data-i18n="sub.ios.step3"></li>
+          <li data-i18n="sub.ios.step4"></li>
+        </ol>
+        <div class="screenshots">
+          <div class="screenshot-placeholder"><span data-i18n="sub.ios.placeholder"></span></div>
+          <div class="screenshot-placeholder"><span data-i18n="sub.ios.placeholder"></span></div>
+          <div class="screenshot-placeholder"><span data-i18n="sub.ios.placeholder"></span></div>
+        </div>
+      </div>
+
+      <!-- Android-guide -->
+      <div class="device-guide">
+        <h3 data-i18n="sub.android.title"></h3>
+        <p data-i18n="sub.android.text"></p>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>
+      <span data-i18n="footer.text"></span>
+      &bull; <a href="#" id="footer-submit" data-i18n="footer.add"></a>
+      &bull; <a href="#" onclick="switchView('submit');return false" data-i18n="footer.contact"></a>
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+  <!-- GoatCounter – besøksstatistikk (bytt ut YOUR_CODE med din GoatCounter-kode) -->
+  <script data-goatcounter="https://YOUR_CODE.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
