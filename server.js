@@ -11,14 +11,16 @@ const PORT = process.env.PORT || 3000;
 const SITE_URL = process.env.SITE_URL || `https://gratismatnbmu.business/`;
 
 const DATA_DIR = path.join(__dirname, 'data');
-const EVENTS_FILE    = path.join(DATA_DIR, 'events.json');
-const RESTEMAT_FILE  = path.join(DATA_DIR, 'restemat.json');
+const EVENTS_FILE   = path.join(DATA_DIR, 'events.json');
+const PENDING_FILE  = path.join(DATA_DIR, 'pending_events.json');
+const RESTEMAT_FILE = path.join(DATA_DIR, 'restemat.json');
 const PUSH_SUBS_FILE = path.join(DATA_DIR, 'push_subscriptions.json');
 
-if (!fs.existsSync(DATA_DIR))        fs.mkdirSync(DATA_DIR);
-if (!fs.existsSync(EVENTS_FILE))     fs.writeFileSync(EVENTS_FILE, '[]');
-if (!fs.existsSync(RESTEMAT_FILE))   fs.writeFileSync(RESTEMAT_FILE, '[]');
-if (!fs.existsSync(PUSH_SUBS_FILE))  fs.writeFileSync(PUSH_SUBS_FILE, '[]');
+if (!fs.existsSync(DATA_DIR))         fs.mkdirSync(DATA_DIR);
+if (!fs.existsSync(EVENTS_FILE))      fs.writeFileSync(EVENTS_FILE, '[]');
+if (!fs.existsSync(PENDING_FILE))     fs.writeFileSync(PENDING_FILE, '[]');
+if (!fs.existsSync(RESTEMAT_FILE))    fs.writeFileSync(RESTEMAT_FILE, '[]');
+if (!fs.existsSync(PUSH_SUBS_FILE))   fs.writeFileSync(PUSH_SUBS_FILE, '[]');
 
 // --- VAPID-nøkler ---
 let VAPID_PUBLIC  = process.env.VAPID_PUBLIC;
@@ -37,10 +39,27 @@ if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
 const vapidSubject = SITE_URL.startsWith('https://') ? SITE_URL : 'mailto:noreply@localhost';
 webpush.setVapidDetails(vapidSubject, VAPID_PUBLIC, VAPID_PRIVATE);
 
+// --- Admin-autentisering ---
+const ADMIN_USER = process.env.ADMIN_USER || 'gratismat';
+const ADMIN_PASS = process.env.ADMIN_PASS || 'gratismat';
+let adminToken = null;
+
+function requireAdmin(req, res, next) {
+  const auth = req.headers['authorization'];
+  if (!adminToken || auth !== `Bearer ${adminToken}`) {
+    return res.status(401).json({ error: 'Ikke autorisert.' });
+  }
+  next();
+}
+
 // --- Sikkerhet ---
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
 app.use(express.static('public'));
+
+app.get('/admin', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
 
 const postLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -55,6 +74,71 @@ function writeJSON(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
+// --- Admin API ---
+
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    adminToken = uuidv4();
+    res.json({ token: adminToken });
+  } else {
+    res.status(401).json({ error: 'Feil brukernavn eller passord.' });
+  }
+});
+
+app.get('/api/admin/pending', requireAdmin, (req, res) => {
+  res.json(readJSON(PENDING_FILE));
+});
+
+app.get('/api/admin/events', requireAdmin, (req, res) => {
+  const events = readJSON(EVENTS_FILE);
+  res.json(events.sort((a, b) =>
+    new Date(a.date + 'T' + (a.time || '00:00')) - new Date(b.date + 'T' + (b.time || '00:00'))
+  ));
+});
+
+const CATEGORY_LABELS = { pizza: '🍕 Pizza', burger: '🍔 Burger', snacks: '🍿 Snacks', annet: '🍽️ Annet' };
+
+app.post('/api/admin/approve/:id', requireAdmin, async (req, res) => {
+  const pending = readJSON(PENDING_FILE);
+  const idx = pending.findIndex(e => e.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Ikke funnet.' });
+
+  const [event] = pending.splice(idx, 1);
+  writeJSON(PENDING_FILE, pending);
+
+  const events = readJSON(EVENTS_FILE);
+  events.push(event);
+  writeJSON(EVENTS_FILE, events);
+
+  const foodLabel = event.category === 'annet' && event.customFood
+    ? `🍽️ ${event.customFood}` : CATEGORY_LABELS[event.category];
+  const dateStr = new Date(event.date + 'T12:00:00').toLocaleDateString('nb-NO', {
+    weekday: 'long', day: 'numeric', month: 'long'
+  });
+  sendPush(`${foodLabel} Nytt arrangement`, `${event.title} – ${dateStr} på ${event.location}`, SITE_URL)
+    .catch(err => console.error('Push-feil:', err));
+
+  res.json({ success: true });
+});
+
+app.post('/api/admin/reject/:id', requireAdmin, (req, res) => {
+  const pending = readJSON(PENDING_FILE);
+  const filtered = pending.filter(e => e.id !== req.params.id);
+  if (filtered.length === pending.length) return res.status(404).json({ error: 'Ikke funnet.' });
+  writeJSON(PENDING_FILE, filtered);
+  res.json({ success: true });
+});
+
+app.delete('/api/admin/events/:id', requireAdmin, (req, res) => {
+  const events = readJSON(EVENTS_FILE);
+  const filtered = events.filter(e => e.id !== req.params.id);
+  if (filtered.length === events.length)
+    return res.status(404).json({ error: 'Arrangement ikke funnet.' });
+  writeJSON(EVENTS_FILE, filtered);
+  res.json({ success: true });
+});
+
 // --- Events API ---
 
 app.get('/api/events', (req, res) => {
@@ -66,7 +150,7 @@ app.get('/api/events', (req, res) => {
 
 const VALID_CATEGORIES = ['pizza', 'burger', 'snacks', 'annet'];
 
-app.post('/api/events', postLimiter, async (req, res) => {
+app.post('/api/events', postLimiter, (req, res) => {
   const { title, date, time, location, category, customFood, description, organizer, signupLink, contact } = req.body;
 
   if (!title || !date || !location || !category)
@@ -81,9 +165,6 @@ app.post('/api/events', postLimiter, async (req, res) => {
   let cleanSignupLink = '';
   if (signupLink) { try { new URL(signupLink); cleanSignupLink = signupLink.trim(); } catch {} }
 
-  const CATEGORY_LABELS = { pizza: '🍕 Pizza', burger: '🍔 Burger', snacks: '🍿 Snacks', annet: '🍽️ Annet' };
-  const foodLabel = category === 'annet' && customFood ? `🍽️ ${customFood}` : CATEGORY_LABELS[category];
-
   const newEvent = {
     id: uuidv4(), title: title.trim(), date, time: time || '',
     location: location.trim(), category,
@@ -93,26 +174,11 @@ app.post('/api/events', postLimiter, async (req, res) => {
     createdAt: new Date().toISOString()
   };
 
-  const events = readJSON(EVENTS_FILE);
-  events.push(newEvent);
-  writeJSON(EVENTS_FILE, events);
+  const pending = readJSON(PENDING_FILE);
+  pending.push(newEvent);
+  writeJSON(PENDING_FILE, pending);
 
-  const dateStr = new Date(date + 'T12:00:00').toLocaleDateString('nb-NO', {
-    weekday: 'long', day: 'numeric', month: 'long'
-  });
-  sendPush(`${foodLabel} Nytt arrangement`, `${title} – ${dateStr} på ${location}`, SITE_URL)
-    .catch(err => console.error('Push-feil:', err));
-
-  res.json({ success: true, event: newEvent });
-});
-
-app.delete('/api/events/:id', (req, res) => {
-  const events = readJSON(EVENTS_FILE);
-  const filtered = events.filter(e => e.id !== req.params.id);
-  if (filtered.length === events.length)
-    return res.status(404).json({ error: 'Arrangement ikke funnet.' });
-  writeJSON(EVENTS_FILE, filtered);
-  res.json({ success: true });
+  res.json({ success: true, pending: true });
 });
 
 // --- Restemat API ---

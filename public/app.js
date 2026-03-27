@@ -39,7 +39,7 @@ const TRANSLATIONS = {
     'submit.ph.contact':     'E-post eller navn',
     'submit.btn':         'Legg til arrangement',
     'submit.btn.saving':  'Lagrer…',
-    'submit.success':     '✓ Arrangementet ble lagt til! Abonnenter varsles via push-varsel.',
+    'submit.success':     '✓ Sendt inn! Arrangementet publiseres etter godkjenning.',
     'submit.err.required':'Vennligst fyll inn tittel, dato, sted og kategori.',
     'submit.err.food':    'Vennligst spesifiser hva slags mat det er.',
 
@@ -134,7 +134,7 @@ const TRANSLATIONS = {
     'submit.ph.contact':     'Email or name',
     'submit.btn':         'Add event',
     'submit.btn.saving':  'Saving…',
-    'submit.success':     '✓ Event added! Subscribers will be notified via push notification.',
+    'submit.success':     '✓ Submitted! The event will be published after approval.',
     'submit.err.required':'Please fill in title, date, location and category.',
     'submit.err.food':    'Please specify what kind of food it is.',
 
