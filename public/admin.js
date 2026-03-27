@@ -11,6 +11,7 @@ function showAdmin() {
   logoutBtn.style.display    = 'block';
   loadPending();
   loadPublished();
+  renderAdminPushStatus();
 }
 
 function showLogin() {
@@ -20,6 +21,47 @@ function showLogin() {
 }
 
 if (token) showAdmin(); else showLogin();
+
+/* ── Admin push-varsler ───────────────────────── */
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = window.atob(base64);
+  const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr;
+}
+
+async function renderAdminPushStatus() {
+  const wrap = document.getElementById('push-admin-wrap');
+  if (!wrap) return;
+
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    wrap.innerHTML = '<p style="font-size:.85rem;color:#888;">Nettleseren din støtter ikke push-varsler.</p>';
+    return;
+  }
+
+  const reg = await navigator.serviceWorker.register('/sw.js');
+  await navigator.serviceWorker.ready;
+  const existing = await reg.pushManager.getSubscription();
+
+  if (existing) {
+    wrap.innerHTML = `<span style="font-size:.85rem;color:#2e7d32;font-weight:600;">🔔 Adminvarsler er aktivert</span>`;
+    return;
+  }
+
+  wrap.innerHTML = `<button id="admin-push-btn" class="btn-approve" style="font-size:.85rem;">🔔 Aktiver varsler når noen sender inn arrangement</button>`;
+  document.getElementById('admin-push-btn').addEventListener('click', async () => {
+    const keyRes = await fetch('/api/push/public-key');
+    const { publicKey } = await keyRes.json();
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey)
+    });
+    await authFetch('/api/admin/push/subscribe', { method: 'POST', body: JSON.stringify(sub) });
+    renderAdminPushStatus();
+  });
+}
 
 document.getElementById('login-form').addEventListener('submit', async e => {
   e.preventDefault();

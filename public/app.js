@@ -302,7 +302,7 @@ function switchView(name) {
   document.querySelectorAll('.nav-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.view === name);
   });
-  if (name === 'feed') renderFeed();
+  if (name === 'calendar' || name === 'feed') fetchEvents().then(() => { renderCalendar(); renderFeed(); });
   if (name === 'now') loadRestemat();
   if (name === 'subscribe') renderPushStatus();
 }

@@ -14,13 +14,15 @@ const DATA_DIR = path.join(__dirname, 'data');
 const EVENTS_FILE   = path.join(DATA_DIR, 'events.json');
 const PENDING_FILE  = path.join(DATA_DIR, 'pending_events.json');
 const RESTEMAT_FILE = path.join(DATA_DIR, 'restemat.json');
-const PUSH_SUBS_FILE = path.join(DATA_DIR, 'push_subscriptions.json');
+const PUSH_SUBS_FILE  = path.join(DATA_DIR, 'push_subscriptions.json');
+const ADMIN_PUSH_FILE = path.join(DATA_DIR, 'admin_push_sub.json');
 
-if (!fs.existsSync(DATA_DIR))         fs.mkdirSync(DATA_DIR);
-if (!fs.existsSync(EVENTS_FILE))      fs.writeFileSync(EVENTS_FILE, '[]');
-if (!fs.existsSync(PENDING_FILE))     fs.writeFileSync(PENDING_FILE, '[]');
-if (!fs.existsSync(RESTEMAT_FILE))    fs.writeFileSync(RESTEMAT_FILE, '[]');
-if (!fs.existsSync(PUSH_SUBS_FILE))   fs.writeFileSync(PUSH_SUBS_FILE, '[]');
+if (!fs.existsSync(DATA_DIR))          fs.mkdirSync(DATA_DIR);
+if (!fs.existsSync(EVENTS_FILE))       fs.writeFileSync(EVENTS_FILE, '[]');
+if (!fs.existsSync(PENDING_FILE))      fs.writeFileSync(PENDING_FILE, '[]');
+if (!fs.existsSync(RESTEMAT_FILE))     fs.writeFileSync(RESTEMAT_FILE, '[]');
+if (!fs.existsSync(PUSH_SUBS_FILE))    fs.writeFileSync(PUSH_SUBS_FILE, '[]');
+if (!fs.existsSync(ADMIN_PUSH_FILE))   fs.writeFileSync(ADMIN_PUSH_FILE, 'null');
 
 // --- VAPID-nøkler ---
 let VAPID_PUBLIC  = process.env.VAPID_PUBLIC;
@@ -84,6 +86,14 @@ app.post('/api/admin/login', (req, res) => {
   } else {
     res.status(401).json({ error: 'Feil brukernavn eller passord.' });
   }
+});
+
+app.post('/api/admin/push/subscribe', requireAdmin, (req, res) => {
+  const sub = req.body;
+  if (!sub || !sub.endpoint)
+    return res.status(400).json({ error: 'Ugyldig abonnement.' });
+  fs.writeFileSync(ADMIN_PUSH_FILE, JSON.stringify(sub, null, 2));
+  res.json({ success: true });
 });
 
 app.get('/api/admin/pending', requireAdmin, (req, res) => {
@@ -178,6 +188,9 @@ app.post('/api/events', postLimiter, (req, res) => {
   pending.push(newEvent);
   writeJSON(PENDING_FILE, pending);
 
+  sendAdminPush('📋 Nytt arrangement til godkjenning', `${newEvent.title} – ${newEvent.location}`, SITE_URL + 'admin')
+    .catch(err => console.error('Admin push-feil:', err));
+
   res.json({ success: true, pending: true });
 });
 
@@ -250,6 +263,17 @@ async function sendPush(title, body, url) {
   if (validSubs.length !== subs.length) writeJSON(PUSH_SUBS_FILE, validSubs);
 
   console.log(`Push sendt til ${subs.length} abonnent(er).`);
+}
+
+async function sendAdminPush(title, body, url) {
+  try {
+    const sub = JSON.parse(fs.readFileSync(ADMIN_PUSH_FILE, 'utf8'));
+    if (!sub || !sub.endpoint) return;
+    await webpush.sendNotification(sub, JSON.stringify({ title, body, url }));
+  } catch (err) {
+    if (err.statusCode === 410) fs.writeFileSync(ADMIN_PUSH_FILE, 'null');
+    else console.error('Admin push-feil:', err);
+  }
 }
 
 app.listen(PORT, () => {
