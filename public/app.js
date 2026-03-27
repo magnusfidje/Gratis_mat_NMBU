@@ -92,6 +92,7 @@ const TRANSLATIONS = {
     'now.ago.hour':         't siden',
 
     'event.signup': '🔗 Link til arrangement',
+    'event.addtocal': '📅 Legg til i kalender',
     'event.date_locale': 'nb-NO',
   },
   en: {
@@ -186,6 +187,7 @@ const TRANSLATIONS = {
     'now.ago.hour':         'h ago',
 
     'event.signup': '🔗 Link to event',
+    'event.addtocal': '📅 Add to calendar',
     'event.date_locale': 'en-GB',
   }
 };
@@ -433,6 +435,7 @@ function showDayEvents(dateStr, events) {
       </div>
       ${ev.description ? `<p style="font-size:.84rem;color:#555;margin-top:.3rem;">${escHtml(ev.description)}</p>` : ''}
       ${ev.signupLink ? `<a href="${escHtml(ev.signupLink)}" target="_blank" rel="noopener" class="signup-btn">${t('event.signup')}</a>` : ''}
+      <button class="signup-btn" onclick="downloadICSById('${escHtml(ev.id)}')">${t('event.addtocal')}</button>
     </div>
   `).join('');
 
@@ -478,6 +481,7 @@ function renderFeed() {
           </div>
           ${ev.description ? `<p class="event-desc">${escHtml(ev.description)}</p>` : ''}
           ${ev.signupLink ? `<a href="${escHtml(ev.signupLink)}" target="_blank" rel="noopener" class="signup-btn">${t('event.signup')}</a>` : ''}
+          <button class="signup-btn" onclick="downloadICSById('${escHtml(ev.id)}')">${t('event.addtocal')}</button>
         </div>
       </div>`;
   }).join('');
@@ -723,6 +727,56 @@ document.getElementById('restemat-form').addEventListener('submit', async e => {
     document.getElementById('restemat-btn').disabled = false;
   }
 });
+
+/* ── Add to calendar (ICS) ───────────────────── */
+function generateICS(ev) {
+  const pad = n => String(n).padStart(2, '0');
+  const [y, m, d] = ev.date.split('-').map(Number);
+
+  let dtstart, dtend;
+  if (ev.time) {
+    const [h, min] = ev.time.split(':').map(Number);
+    dtstart = `${y}${pad(m)}${pad(d)}T${pad(h)}${pad(min)}00`;
+    const endDate = new Date(y, m - 1, d, h + 1, min);
+    dtend = `${endDate.getFullYear()}${pad(endDate.getMonth()+1)}${pad(endDate.getDate())}T${pad(endDate.getHours())}${pad(endDate.getMinutes())}00`;
+  } else {
+    dtstart = `${y}${pad(m)}${pad(d)}`;
+    const next = new Date(y, m - 1, d + 1);
+    dtend = `${next.getFullYear()}${pad(next.getMonth()+1)}${pad(next.getDate())}`;
+  }
+
+  let desc = [ev.description, ev.organizer, ev.contact].filter(Boolean).join('\\n');
+
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Gratis Mat NMBU//NO',
+    'BEGIN:VEVENT',
+    `UID:${ev.id}@gratismatnbmu.business`,
+    ev.time ? `DTSTART:${dtstart}` : `DTSTART;VALUE=DATE:${dtstart}`,
+    ev.time ? `DTEND:${dtend}`   : `DTEND;VALUE=DATE:${dtend}`,
+    `SUMMARY:${ev.title}`,
+    ev.location    ? `LOCATION:${ev.location}`       : '',
+    desc           ? `DESCRIPTION:${desc}`            : '',
+    ev.signupLink  ? `URL:${ev.signupLink}`           : '',
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].filter(Boolean);
+
+  return lines.join('\r\n');
+}
+
+function downloadICSById(id) {
+  const ev = allEvents.find(e => e.id === id);
+  if (!ev) return;
+  const blob = new Blob([generateICS(ev)], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${ev.title.replace(/[^a-z0-9]/gi, '_')}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 /* ── Utility ─────────────────────────────────── */
 function escHtml(str) {
