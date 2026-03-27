@@ -34,7 +34,8 @@ if (!VAPID_PUBLIC || !VAPID_PRIVATE) {
   console.log('Legg disse til i Railway-miljøvariablene for å beholde abonnenter mellom omstarter.\n');
 }
 
-webpush.setVapidDetails(SITE_URL, VAPID_PUBLIC, VAPID_PRIVATE);
+const vapidSubject = SITE_URL.startsWith('https://') ? SITE_URL : 'mailto:noreply@localhost';
+webpush.setVapidDetails(vapidSubject, VAPID_PUBLIC, VAPID_PRIVATE);
 
 // --- Sikkerhet ---
 app.use(helmet());
