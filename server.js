@@ -8,7 +8,7 @@ const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SITE_URL = process.env.SITE_URL || `https://gratismatnbmu.business/`;
+const SITE_URL = process.env.SITE_URL || `https://gratismatnmbu.info/`;
 
 const DATA_DIR = path.join(__dirname, 'data');
 const EVENTS_FILE   = path.join(DATA_DIR, 'events.json');
